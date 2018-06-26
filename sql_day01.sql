@@ -1,14 +1,14 @@
 --sql day01
---1.SCOTT °èÁ¤ È°¼ºÈ­: sys °èÁ¤À¸·Î Á¢¼ÓÇÏ¿© ½ºÅ©¸³Æ® ½ÇÇà
+--1.SCOTT ê³„ì • í™œì„±í™”: sys ê³„ì •ìœ¼ë¡œ ì ‘ì†í•˜ì—¬ ìŠ¤í¬ë¦½íŠ¸ ì‹¤í–‰
 @C:\oraclexe\app\oracle\product\11.2.0\server\rdbms\admin\scott.sql
---2. Á¢¼Ó À¯Àú È®ÀÎ ¸í·É
+--2. ì ‘ì† ìœ ì € í™•ì¸ ëª…ë ¹
 show user
---3. HR°èÁ¤ È°¼ºÈ­: sys°èÁ¤À¸·Î Á¢¼ÓÇÏ¿©
---                ´Ù¸¥ »ç¿ëÀÚ È®Àå ÈÄ HR °èÁ¤ÀÇ
---                °èÁ¤Àá±è, ºñ¹Ð¹øÈ£ ¸¸·á »óÅÂ ÇØÁ¦
+--3. HRê³„ì • í™œì„±í™”: sysê³„ì •ìœ¼ë¡œ ì ‘ì†í•˜ì—¬
+--                ë‹¤ë¥¸ ì‚¬ìš©ìž í™•ìž¥ í›„ HR ê³„ì •ì˜
+--                ê³„ì •ìž ê¹€, ë¹„ë°€ë²ˆí˜¸ ë§Œë£Œ ìƒíƒœ í•´ì œ
 
---SCOTT °èÁ¤ÀÇ µ¥ÀÌÅÍ ±¸Á¶
---(1)EMP Å×ÀÌºí ³»¿ë Á¶È¸
+--SCOTT ê³„ì •ì˜ ë°ì´í„° êµ¬ì¡°
+--(1)EMP í…Œì´ë¸” ë‚´ìš© ì¡°íšŒ
 SELECT *
   FROM EMP
 ;
@@ -25,7 +25,7 @@ SELECT *
 --7902	FORD	ANALYST	    7566	81/12/03	3000		    20
 --7934	MILLER	CLERK	    7782	82/01/23	1300		    10
 
---(2) deptÅ×ÀÌºí ³»¿ë Á¶È¸
+--(2) deptí…Œì´ë¸” ë‚´ìš© ì¡°íšŒ
 SELECT *
   FROM dept
 ;
@@ -36,7 +36,7 @@ SELECT *
 40	OPERATIONS	BOSTON
 */
 
---(3)SALGRADE Å×ÀÌºí ³»¿ë Á¶È¸
+--(3)SALGRADE í…Œì´ë¸” ë‚´ìš© ì¡°íšŒ
 SELECT *
   FROM salgrade
 ;
@@ -50,15 +50,15 @@ GRADE LOSAL HISAL
 */
 
 --01. DQL
---(1)SELECT ±¸¹®
---emp Å×ÀÌºí¿¡¼­ »ç¹ø, ÀÌ¸§, Á÷¹«¸¦ Á¶È¸
+--(1)SELECT êµ¬ë¬¸
+--emp í…Œì´ë¸”ì—ì„œ ì‚¬ë²ˆ, ì´ë¦„, ì§ë¬´ë¥¼ ì¡°íšŒ
 SELECT e.EMPNO
       ,e.ENAME
       ,e.JOB
-  FROM emp e--¼Ò¹®ÀÚ e´Â º°Äª
+  FROM emp e--ì†Œë¬¸ìž eëŠ” ë³„ì¹­
 ;
 
---empÅ×ÀÌºí¿¡¼­ Á÷¹«¸¸ Á¶È¸
+--empí…Œì´ë¸”ì—ì„œ ì§ë¬´ë§Œ ì¡°íšŒ
 SELECT e.job
   FROM emp e
 ;
@@ -77,8 +77,8 @@ ANALYST
 CLERK
 */
 
---(2) DISTINCT ¹®:SELECT ¹® »ç¿ë½Ã Áßº¹À» ¹èÁ¦ÇÏ¿© Á¶È¸
---emp Å×ÀÌºí¿¡¼­ JOB Ä®·³ÀÇ Áßº¹À» ¹èÁ¦ÇÏ¿© Á¶È¸
+--(2) DISTINCT ë¬¸:SELECT ë¬¸ ì‚¬ìš©ì‹œ ì¤‘ë³µì„ ë°°ì œí•˜ì—¬ ì¡°íšŒ
+--emp í…Œì´ë¸”ì—ì„œ JOB ì¹¼ëŸ¼ì˜ ì¤‘ë³µì„ ë°°ì œí•˜ì—¬ ì¡°íšŒ
 SELECT DISTINCT e.job
   FROM emp e
 ;
@@ -90,21 +90,21 @@ MANAGER
 ANALYST
 */
 
-/*  SQL SELECT ±¸¹®ÀÇ ÀÛµ¿ ¿ø¸®: Å×ÀÌºíÀÇ ÇÑ ÇàÀ» ±âº» ´ÜÀ§·Î ½ÇÇàÇÔ.
-                               Å×ÀÌºí ÇàÀÇ °³¼ö¸¸Å­ ¹Ýº¹ ½ÇÇà.*/
+/*  SQL SELECT êµ¬ë¬¸ì˜ ìž‘ë™ ì›ë¦¬: í…Œì´ë¸”ì˜ í•œ í–‰ì„ ê¸°ë³¸ ë‹¨ìœ„ë¡œ ì‹¤í–‰í•¨.
+                               í…Œì´ë¸” í–‰ì˜ ê°œìˆ˜ë§Œí¼ ë°˜ë³µ ì‹¤í–‰.*/
 SELECT 'Hello, SQL~'
   FROM emp e
 ;
 
---emp Å×ÀÌºí¿¡¼­ job, deptno¿¡ ´ëÇØ Áßº¹À» Á¦°ÅÇÏ¿© Á¶È¸
+--emp í…Œì´ë¸”ì—ì„œ job, deptnoì— ëŒ€í•´ ì¤‘ë³µì„ ì œê±°í•˜ì—¬ ì¡°íšŒ
 SELECT DISTINCT
        e.JOB
       ,e.DEPTNO
   FROM emp e
 ;
 
---(3) ORDER BYÀý: Á¤·Ä
---emp Å×ÀÌºí¿¡¼­ jobÀ» Áßº¹¹èÁ¦ÇÏ¿© Á¶È¸ÇÏ°í °á°ú´Â ¿À¸§Â÷¼øÀ¸·Î Á¤·Ä
+--(3) ORDER BYì ˆ: ì •ë ¬
+--emp í…Œì´ë¸”ì—ì„œ jobì„ ì¤‘ë³µë°°ì œí•˜ì—¬ ì¡°íšŒí•˜ê³  ê²°ê³¼ëŠ” ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œ ì •ë ¬
 SELECT DISTINCT 
        e.JOB
   FROM emp e
@@ -118,7 +118,7 @@ PRESIDENT
 SALESMAN
 */
 
---emp Å×ÀÌºí¿¡¼­ jobÀ» Áßº¹¹èÁ¦ÇÏ¿© Á¶È¸ÇÏ°í ³»¸²Â÷¼øÀ¸·Î Á¤·Ä
+--emp í…Œì´ë¸”ì—ì„œ jobì„ ì¤‘ë³µë°°ì œí•˜ì—¬ ì¡°íšŒí•˜ê³  ë‚´ë¦¼ì°¨ìˆœìœ¼ë¡œ ì •ë ¬
 SELECT DISTINCT
        e.JOB
   FROM emp e
@@ -134,8 +134,8 @@ ANALYST
 */
 SELECT * FROM emp;
 
---7)empÅ×ÀÌºí¿¡¼­ commÀ» °¡Àå ¸¹ÀÌ ¹Þ´Â ¼ø¼­´ë·Î Ãâ·Â
---  »ç¹ø, ÀÌ¸§, Á÷¹«, ÀÔ»çÀÏ, Ä¿¹Ì¼Ç ¼øÀ¸·Î Á¶È¸
+--7)empí…Œì´ë¸”ì—ì„œ commì„ ê°€ìž¥ ë§Žì´ ë°›ëŠ” ìˆœì„œëŒ€ë¡œ ì¶œë ¥
+--  ì‚¬ë²ˆ, ì´ë¦„, ì§ë¬´, ìž…ì‚¬ì¼, ì»¤ë¯¸ì…˜ ìˆœìœ¼ë¡œ ì¡°íšŒ
 SELECT e.EMPNO
       ,e.ENAME
       ,e.JOB
@@ -144,23 +144,45 @@ SELECT e.EMPNO
   FROM emp e
   ORDER BY e.COMM DESC
 ;
---½ÇÇàÇÒ °æ¿ì nullµ¥ÀÌÅ¸°¡ Å« °ªÀ¸·Î Ãë±ÞµÈ´Ù.
-/*
-7369	SMITH	CLERK	80/12/17	
-7698	BLAKE	MANAGER	81/05/01	
-7902	FORD	ANALYST	81/12/03	
-7900	JAMES	CLERK	81/12/03	
+/*ì‹¤í–‰í•  ê²½ìš° nullë°ì´íƒ€ê°€ í° ê°’ìœ¼ë¡œ ì·¨ê¸‰ëœë‹¤.
+7369	SMITH	CLERK	    80/12/17	
+7698	BLAKE	MANAGER	    81/05/01	
+7902	FORD	ANALYST	    81/12/03	
+7900	JAMES	CLERK	    81/12/03	
 7839	KING	PRESIDENT	81/11/17	
-7566	JONES	MANAGER	81/04/02	
-7934	MILLER	CLERK	82/01/23	
-7782	CLARK	MANAGER	81/06/09	
+7566	JONES	MANAGER	    81/04/02	
+7934	MILLER	CLERK	    82/01/23	
+7782	CLARK	MANAGER	    81/06/09	
 7654	MARTIN	SALESMAN	81/09/28	1400
 7521	WARD	SALESMAN	81/02/22	500
 7499	ALLEN	SALESMAN	81/02/20	300
 7844	TURNER	SALESMAN	81/09/08	0
 */
 
---½Ç½À 1¹ø
+-- 8)empí…Œì´ë¸”ì—ì„œ  commì´ ìž‘ì€ ìˆœì„œëŒ€ë¡œ, ì§ë¬´ë³„ ì˜¤ë¦„ì°¨ìˆœ, ì´ë¦„ë³„ ì˜¤ë¦„ì°¨ìˆœìœ¼ë¡œ ì •ë ¬
+--   ì‚¬ë²ˆ, ì´ë¦„, ì§ë¬´, ìž…ì‚¬ì¼, ì»¤ë¯¸ì…˜ì„ ì¡°íšŒ
+SELECT e.EMPNO
+      ,e.EMPNO
+      ,e.JOB
+      ,e.HIREDATE
+      ,e.COMM
+  FROM emp e
+  ORDER BY e.COMM, e.JOB, e.ENAME
+;
+
+--9)empí…Œì´ë¸”ì—ì„œ commì´ ì ì€ ìˆœì„œëŒ€ë¡œ, ì§ë¬´ë³„ ì˜¤ë¦„ì°¨ìˆœ, ì´ë¦„ë³„ ë‚´ë¦¼ì°¨ìˆœìœ¼ë¡œ ì •ë ¬
+--  ì‚¬ë²ˆ, ì´ë¦„, ì§ë¬´, ìž…ì‚¬ì¼, ì»¤ë¯¸ì…˜ì„ ì¡°íšŒ
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.JOB
+      ,e.HIREDATE
+      ,e.COMM
+  FROM emp e
+  ORDER BY e.COMM, e.JOB, e.ENAME DESC
+;
+
+
+--ì‹¤ìŠµ 1ë²ˆ
 SELECT e.EMPNO
       ,e.ENAME
       ,e.JOB
@@ -168,3 +190,5 @@ SELECT e.EMPNO
   FROM emp e
   ORDER BY e.SAL desc
 ;
+
+--ì‹¤ìŠµ 2ë²ˆ
