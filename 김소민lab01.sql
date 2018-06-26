@@ -178,33 +178,3 @@ SELECT *
   WHERE e.ENAME 
    LIKE '%E_'
 ;
-
-
---실습 23)
-SELECT *
-  FROM emp e
- WHERE e.SAL 
- BETWEEN 2500 
-     AND 3000
-;
-
-
---실습 24)
-SELECT *
-  FROM emp e
- WHERE e.COMM IS NULL
-;
-
-
---실습 25)
-SELECT *
-  FROM emp e
- WHERE e.COMM IS NOT NULL
-;
-
-
---실습 26)
-SELECT e.EMPNO as 사번
-      ,e.ENAME || '의 월급은 $' || e.SAL || '입니다'  as 월급여
-  FROM emp e 
-;
