@@ -251,12 +251,217 @@ CLERK
 ANALYST
 */
 
+--(5) WHERE 조건절
+--16) emp 테이블에서 empno이 7900인 사원의
+--    사번, 이름, 직무, 입사일, 급여, 부서번호 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.JOB
+      ,e.HIREDATE
+      ,e.SAL
+      ,e.DEPTNO
+  FROM emp e
+  WHERE e.EMPNO = 7900
+;
+/*
+EMPNO,   ENAME,   JOB,   HIREDATE,  SAL, DEPTNO
+-------------------------------------------------
+7900	JAMES	CLERK	81/12/03    950	   30
+*/
+
+--17)emp테이블에서 empno는 7900이거나 deptno가 20인 직원의 정보를 조회
+--   사번, 이름, 직무, 입사일, 급여, 부서번호만 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.JOB
+      ,e.HIREDATE
+      ,e.SAL
+      ,e.DEPTNO
+  FROM emp e
+  WHERE e.EMPNO = 7900 
+     OR e.DEPTNO = 20
+;
+
+--18) job이 'CLERK'이면서 DEPTNO가 10인 직원의
+--    사번, 이름, 직무, 부서번호를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.JOB
+      ,e.DEPTNO
+  FROM emp e
+  WHERE e.JOB = 'CLERK'
+    AND e.DEPTNO = 10
+;
+
+SELECT e.EMPNO 사번
+      ,e.ENAME 이름
+      ,e.SAL 급여
+      ,e.SAL*0.033 원천징수세금
+      ,e.SAL *0.967 실수령액
+  FROM emp e
+;
 
 
+SELECT e.EMPNO 사번
+      ,e.ENAME 이름
+      ,e.SAL 급여
+      ,e.SAL*0.033 원천징수세금
+      ,e.SAL *0.967 실수령액
+  FROM emp e
+;
+
+SELECT e.EMPNO 사번
+      ,e.ENAME 이름
+      ,e.SAL 급여
+      ,e.SAL*0.033 원천징수세금
+      ,e.SAL *0.967 실수령액
+  FROM emp e
+;
+
+SELECT e.EMPNO 사번
+      ,e.ENAME 이름
+      ,e.SAL 급여
+      ,e.SAL*0.033 원천징수세금
+      ,e.SAL -(e.SAL * 0.033) 실수령액
+  FROM emp e
+;
+
+--(6)연산자 2. 비교연산자
+--비교연산자는 SELECT절에 사용할 수 없다
+--WHERE, HAVING절에만 사용할 수 있다
+
+--22)급여가 2000이 넘는 사원의 사번 이름 급여를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE e.SAL > 2000
+;
+
+--급여가 1000이상인 직원의 사번, 이름, 급여를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE e.SAL >= 1000
+;
+
+--급여가 1000이상이며 2000미만인 직원의 사번, 이름, 급여를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE e.SAL >=1000 
+   AND e.SAL <2000
+;
+
+--comm 값이 0보다 큰 직원의, 사번, 이름, 급여를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+      ,e.COMM
+  FROM emp e
+ WHERE e.COMM > 0
+;
+
+/*
+위의 실행결과에서 comm이 (null)인 사람들의 행은 처음부터 비교대상에
+들지 않음에 주의하여야 한다.
+(null)값은 비교연산자로 비교할 수 없다.
+*/
+
+--23)영업사원(SALESMAN) 직무를 가진 사람들은 급여와 수당을 함께 받으므로
+--영업사원의 실제 수령금을 계산해보자
+SELECT e.EMPNO 사번
+      ,e.ENAME 이름
+      ,e.JOB 직무
+      ,e.SAL + e.COMM "급여+수당"
+  FROM emp e
+;
+
+--24)급여가 2000보다 적지 않은 직원의 사번, 이름, 급여를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE NOT e.SAL < 2000
+;
+
+--(6)연산자 : 4.SQL연산자
+---IN 연산자: 비교하고자 하는 기준 값이 제시된 항목 목록에 존재하면 참으로 판단
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE e.SAL in(800, 3000, 5000)
+;
+
+--동일한 결과
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+  FROM emp e
+ WHERE e.SAL =800
+    or e.SAL =3000
+    or e.SAL =5000
+;
+
+--LIKE 연산자: 유사 값을 검색하는데 사용하는 연산자
 
 
+--26)이름이 j로 시작하는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE 'J%'
+;
 
+--27)이름에 M으로 시작하는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE 'M%'
+;
+--27)이름에 M이 들어가는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE '%M%'
+;
 
+--28)이름의 두번째 자리에 M이 들어가는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE '_M%'
+;
 
+--29)이름의 세번째 자리에 M이 들어가는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE '__M%'
+;
 
+--30)이름의 두번째 글자부터 'LA'가 들어가는 직원의 사번, 이름 조회
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE '_LA%'
+;
 
+--이름이 j_로 시작하는 직원의 사번, 이름 조회
+--조회하려는 값에 들어있는 패턴인식 문자를 무효화 하려면 ESCAPE 절과 조합한다.
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE 'J\_%' ESCAPE '\'
+;
+
+--이름이 j%로 시작하는 직원의 사번, 이름 조회
+--조회하려는 값에 들어있는 패턴인식 문자를 무효화 하려면 ESCAPE 절과 조합한다.
+SELECT e.EMPNO
+      ,e.ENAME
+  FROM emp e
+ WHERE e.ENAME LIKE 'J\%%' ESCAPE '\'
+;
