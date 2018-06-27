@@ -275,3 +275,200 @@ EMPNO,  ENAME,  JOB,        SAL,    MGR
 7900	JAMES	CLERK	    950	    7698
 7934	MILLER	CLERK	    1300	7782
 */
+
+
+------------6.함수
+--(2)dual 테이블 : 1행 1열로 구성된 시스템 테이블 
+DESC dual;
+
+SELECT *   --> duummy 컬러에 X값이 하나 들어있음을 확인 할 수 있다.
+  FROM dual
+;
+
+--dual 테이블을 사용하여 날짜 조회
+SELECT sysdate
+  FROM dual
+;
+
+--(3)단일행 함수
+---1) 숫자함수 : 1.MOD(m, n) : m을 n으로 나눈 나머지 계산 함수
+SELECT mod(10, 3) as resualt
+  FROM dual
+;
+
+SELECT mod(10, 3) as resualt
+  FROM dept
+;
+
+
+--각 사원의 급여를 3으로 나눈 나머지를 조회
+SELECT e.EMPNO
+      ,e.ENAME
+      ,MOD(e.SAL, 3) as "Resualt"
+  FROM emp e
+;
+
+
+----2.ROUND(m, n)
+SELECT ROUND(1234.56, 1) FROM dual;
+SELECT ROUND(1234.56, 0) FROM dual;
+SELECT ROUND(1234.46, 0) FROM dual;
+--ROUND(m) : n값을 생략하면 소수점 이하 첫째자리 반올림 바로 수행
+--           즉, n값을 0으로 수정함
+
+----3.TRUNC(m, n) : 실수 m을 n에서 지정한 자리 이하 소수점 버림
+SELECT TRUNC(1234.56, 1) FROM dual;
+--n을 생략하면 0으로 수행한다.
+
+----4.CEIL(n) : 입력된 실수 n에서 같거나 가장 큰 가까운 정수
+SELECT CEIL(1234.56) FROM dual;
+SELECT CEIL(1234) FROM dual;
+SELECT CEIL(1234.001) FROM dual;
+
+----5.FLOOR(n) : 입력된 실수 n에서 같거나 가장 가까운 작은 정수
+SELECT FLOOR(1234.56) FROM dual;
+SELECT FLOOR(1234) FROM dual;
+SELECT FLOOR(1234.001) FROM dual;
+
+----6.WIDTH_BUKET(expr, min, max, bukets)
+--:min, max 값 사이를 bukets 개수만큼의 구간으로 나누고
+--expr이 출력하는 값이 어느 구간인지 위치를 숫자로 구해줌
+
+--급여 범위를 0~5000으로 잡고, 5개의 구간으로 나누어서
+--각 직원의 급여가 어느 구간에 해당하는지 보고서를 출력해보자
+SELECT e.EMPNO
+      ,e.ENAME
+      ,e.SAL
+      ,WIDTH_BUCKET(e.SAL, 0, 5000, 5) as "급여 구간"    
+  FROM emp e
+ORDER BY "급여 구간"
+ ; 
+ 
+----2)문자함수
+----1. INITCAP(str): String의 첫 글자를 대문자화(영문인 경우)
+SELECT INITCAP('the saop') FROM dual; --The Saop
+
+----2. LOWER(str): str을 소문자화(영문인경우)
+SELECT LOWER('MR. SCCOT MCMILLAN') "소문자로 변경" FROM dual;
+
+----3. UPPER(str):str을 대문자화(영문인경우)
+SELECT UPPER('lee') "대문자로 변경" FROM dual;
+
+----4. LENGTH(str), LENGTHB(st):str의 글자길이를 계산, 글자의 byte길이를 계산
+SELECT LENGTH('hello, sql') as "글자길이" FROM dual;
+--oracle에서 한글은 3byte이다.
+SELECT LENGTHB('안녕오라클') as "글자 byte" FROM dual;
+SELECT LENGTHB('hello, sql') as "글자 byte" FROM dual;
+----5. CONCAT(str1, str2):str1, str2 문자열을 접합, ||연산자와 동일
+SELECT CONCAT('안녕하세요, ','sql') FROM dual;
+
+----6. SUBSTR(str, i, n):문자열 일부추출. str에서 i번째 위치에서 n개의 글자를 추출
+---    SQL에서 문자열 인덱스를 나타내는 i는 1부터 시작에 주의함!
+SELECT SUBSTR('SQL is not Coolllll', 3, 4) FROM dual;
+--SUBSTR(str, i):문자열 i부터 전부 추출
+SELECT SUBSTR('SQL is not Coolllll', 3) FROM dual;
+
+----7. INSTR(str1, str2): 2번째 문자열이 1번째 문자열 어디에 위치하는가 등장하는 위치를 계산 
+SELECT INSTR('sql is cooooool!', 'is') FROM dual;
+--못찾는 경우 0을 리턴한다.
+SELECT INSTR('sql is cooooool!', 'ia') FROM dual;
+
+----8. LPAD, RPAD(str, n, c)
+--     :입력된 str에 대해서, 전체 글자의 자릿수를 n으로 잡고 
+--      남는 공간에 왼쪽, 혹은 오른쪽으로 c의 문자를 채워넣는다.
+SELECT LPAD('sql is cooooool!', 20, '!') FROM dual;
+
+----9. LTRIM, RTRIM, TRIM:입력된 문자열의 왼쪽, 오른쪽, 양쪽 공백 제거
+SELECT '>' || LTRIM('    sql    ') || '<' FROM dual;
+SELECT '>' || RTRIM('    sql    ') || '<' FROM dual;
+SELECT '>' || TRIM('    sql    ') || '<' FROM dual;
+
+----10. NVL(expre1, expre2), NVL2(expre1, expre2, ecpre3), NULLIF(expre1, expre2)
+--nvl(expr1, expr2): 첫번째 식의 값이 NULL이면 두번째 식으로 대체하여 출력
+--mgr가 배정안된 직원의 경우 '매니저 없음'으로 변경해서 출력
+SELECT e.EMPNO
+      ,e.ENAME
+      ,nvl(e.MGR, '매니저 없음') -->오류: mgr은 숫자데이터고 변경출력값은 문자
+  FROM emp e
+;
+----------------------------------------
+SELECT e.EMPNO
+      ,e.ENAME
+      ,nvl(e.MGR, 0) 
+  FROM emp e
+;
+----------------------------------------
+SELECT e.EMPNO
+      ,e.ENAME
+      ,nvl(e.MGR||'', '매니저 없음') -->숫자타입 데이터 뒤에 문자('')를 붙여서 형변환
+  FROM emp e
+;
+
+
+--NVL2(expre1, expre2, ecpre3): 첫번째 식의 값이 NOT NULL이면 두번째 식의 값으로 대체하여 출력
+--                              NULL이면 세번째 식의 값으로 대체하여 출력
+SELECT e.EMPNO
+      ,e.ENAME
+      ,nvl2(e.MGR, '매니저 있음' , '매니저 없음') -->숫자타입 데이터 뒤에 문자('')를 붙여서 형변환
+  FROM emp e
+;
+
+--NULLIF(expre1, expre2): 첫번째 식, 두번째 식의 값이 동일하면 NULL을 출력
+--                        식의 값이 다르면 첫번째 식의 값을 출력
+SELECT NULLIF('AAA', 'bbb')
+  FROM dual
+;
+
+SELECT NULLIF('AAA', 'AAA')
+  FROM dual
+;
+--조회된 결과 1행이 NULL인 결과를 얻게됨
+--1행이라도 NULL이 조회된 결과는 인출된 모든 행: 0과는 상태가 다름!
+
+
+-----3)날짜함수 : 날짜출력 패턴 조합으로 다양하게 출력 가능
+SELECT sysdate FROM dual;
+--TO_CHAR(): 숫자나 날짜를 문자형으로 변환
+SELECT TO_CHAR (sysdate, 'YYYY') FROM dual;
+SELECT TO_CHAR (sysdate, 'YY') FROM dual;
+SELECT TO_CHAR (sysdate, 'MM') FROM dual;
+SELECT TO_CHAR (sysdate, 'MONTH') FROM dual;
+SELECT TO_CHAR (sysdate, 'DD') FROM dual;
+SELECT TO_CHAR (sysdate, 'D') FROM dual;
+SELECT TO_CHAR (sysdate, 'DAY') FROM dual;
+SELECT TO_CHAR (sysdate, 'DY') FROM dual;
+
+---패턴을 조합
+SELECT TO_CHAR (sysdate, 'YYYY-MM-DD') FROM dual;
+SELECT TO_CHAR (sysdate, 'FMYYYY-MM-DD') FROM dual;
+SELECT TO_CHAR (sysdate, 'YY-MONTH-DD') FROM dual;
+SELECT TO_CHAR (sysdate, 'YY-MONTH-DD DAY') FROM dual;
+SELECT TO_CHAR (sysdate, 'YY-MONTH-DD DY') FROM dual;
+
+/*시간패턴
+HH:시간을 두자리
+MI:분을 두자리
+SS:초를 두자리
+HH24:시간을 24시간 체계로 표기
+AM: 오전인지 오후인지 표시
+*/
+SELECT TO_CHAR (sysdate, 'YYYY-MM-DD HH24:MI:SS') FROM dual;
+SELECT TO_CHAR (sysdate, 'YYYY-MM-DD AM HH:MI:SS') FROM dual;
+
+--날짜 값과 숫자의 연산: +, -연산 가능
+SELECT sysdate + 10 FROM dual;--10일후
+SELECT sysdate - 10 FROM dual;--10일전
+SELECT  TO_CHAR(sysdate +(10/24), 'YYYY-MM-DD AM HH:MI:SS')FROM dual;--10시간 후
+
+
+----1. MONTHS_BETWEEN(날짜1, 날짜2):두 날짜 사이의 달의 차이
+SELECT MONTHS_BETWEEN(SYSDATE, E.HIREDATE) FROM EMP E;
+----2. ADD_MONTHS(날짜1, 숫자):날짜1에 숫자만큼 더한 후의 날자를 구함
+SELECT ADD_MONTHS(sysdate, 3) FROM dual;
+----3. NEXT_DAY, LAST_DAY:
+SELECT NEXT_DAY(sysdate, '일요일') FROM dual;
+SELECT LAST_DAY(sysdate) FROM dual;
+----4.ROUND, TRUNCE
+SELECT TO_CHAR(ROUND(sysdate), 'YYYY-MM-DD HH:MI:SS') FROM dual;
+SELECT TRUNCE(sysdate) FROM dual;
+
