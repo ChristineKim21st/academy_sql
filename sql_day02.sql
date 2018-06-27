@@ -472,3 +472,102 @@ SELECT LAST_DAY(sysdate) FROM dual;
 SELECT TO_CHAR(ROUND(sysdate), 'YYYY-MM-DD HH:MI:SS') FROM dual;
 SELECT TRUNCE(sysdate) FROM dual;
 
+------1. TO_CHAR() : 숫자패턴 적용
+--숫자패턴 : 9 ==> 한자리 숫자
+SELECT TO_CHAR(12345, '9999') FROM dual;
+SELECT TO_CHAR(12345, '99999') FROM dual;
+SELECT TO_CHAR(12345, '999999999999') data FROM dual;
+--앞에 빈칸 0으로 채우기
+SELECT TO_CHAR(12345, '0099999') data FROM dual;
+SELECT TO_CHAR(12345, '99999.99') data FROM dual;
+--숫자패턴에서 3자리씩 끊어 읽기 + 소수점 표현
+SELECT TO_CHAR(12345, '99,999.99') data FROM dual;
+
+
+----2. TO_DATE(): 날짜 패턴에 맞는 문자 값을 날짜 데이터로 변경
+SELECT TO_DATE('2018-06-27', 'YYYY-MM-DD') today FROM dual;
+
+SELECT TO_DATE('2018-06-27', 'YYYY-MM-DD') + 10 today FROM dual;
+SELECT '2018-06-27' + 10 today FROM dual; 
+--01722. 00000 -  "invalid number"==>문자 + 숫자 10의 연산 불가능
+
+
+----3. TO_NUMBeR():오라클이 자동 형변환을 제공하므로 자주 사용은 안됨
+SELECT '1000' + 10 result FROM dual;
+
+---5)DECODE(expre, search, result [,search, result]..[, default])
+/*
+만약에 default가 설정이 안되었고
+expre과 일치하는 search가 없는경우 null을 리턴
+*/
+SELECT DECODE('예' --expre
+             , 'YES', '입력값이 YES입니다.'--search, result 세트1
+             , 'NO', '입력값이 NO입니다'--search, result 세트2
+             , '입력값이 YES/NO 중 어느것도 아닙니다.')as result
+  FROM dual
+;
+-->>expre과 일치하는 search가 없고, default 설정도 안되었을 때
+--결과가 <인출된 모든 행:0>이 아닌 NULL이라는 것 확인
+
+--emp테이블의 hiredate의 입사년도를 추출하여 몇년 근무했는지를 계산
+--장기 근속 여부를 판단
+--1) 입사년도 추출: 날짜 패턴
+ SELECT e.EMPNO
+       ,e.ENAME
+       ,TO_CHAR(e.HIREDATE, 'YYYY') hireyear
+  FROM emp e
+;
+--2) 몇년근무 판단: 오늘 시스템 날짜와 계산
+SELECT e.EMPNO
+      ,e.ENAME
+      ,TO_CHAR(sysdate, 'YYYY') - TO_CHAR(e.HIREDATE, 'YYYY') "근무햇수"
+  FROM emp e
+;
+
+--3) 37년 이상 된 직원을 장기 근속으로 판단
+SELECT a.EMPNO
+      ,a.ENAME
+      ,DECODE(a.workingyear
+             ,37, '장기 근속자 입니다'--search, result 세트1
+             ,38, '장기 근속자 입니다'--search, result 세트2
+             ,'장기 근속자가 아닙니다')
+  FROM(
+    SELECT e.EMPNO
+         ,e.ENAME
+         ,TO_CHAR(sysdate, 'YYYY') - TO_CHAR(e.HIREDATE, 'YYYY') workingyear
+      FROM emp e)a
+;
+
+--job 별로 경조사비를 급여대비 일정 비율로 지급하고 있다
+--각 직원들의 경조사비 지원금을 구하자
+/*
+CLERK : 5%
+SALESMAN:4%
+MANAGER:3.7%
+ANALYST:3%
+PRESIDENT:1.5%
+*/
+
+SELECT e.EMPNO
+      ,e.ENAME
+      ,DECODE(e.JOB
+             ,'CLERK',     e.SAL*0.05
+             ,'SALESMAN',  e.SAL*0.04
+             ,'MANAGER',   e.SAL*0.037
+             ,'ANALYST',   e.SAL*0.03
+             ,'PRESIDENT', e.SAL*0.015) "경조사비 지원금"
+  FROM emp e
+;
+
+
+--출력결과에 숫자 패턴 적용
+SELECT e.EMPNO
+      ,e.ENAME
+      ,TO_CHAR(DECODE(e.JOB --expr
+             ,'CLERK',     e.SAL*0.05 --search, result
+             ,'SALESMAN',  e.SAL*0.04
+             ,'MANAGER',   e.SAL*0.037
+             ,'ANALYST',   e.SAL*0.03
+             ,'PRESIDENT', e.SAL*0.015),'$999.99') "경조사비 지원금"
+  FROM emp e
+;
