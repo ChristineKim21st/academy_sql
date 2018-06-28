@@ -1,3 +1,11 @@
+/*절의 실행 순서
+5.SELECT
+1.FROM
+2.WHERE
+3.GROUP BY
+4.HAVING
+5.ORDER BY
+*/
 ---(3) 단일행 함수
 ---6) CASE
 --job 별로 경조사비를 급여대비 일정 비율로 지급하고 있다
@@ -306,3 +314,160 @@ SELECT e.JOB        "직무"
   GROUP BY e.JOB
   ORDER BY e.JOB 
 ;
+
+--Job별 급여의 총합, 평균, 최대, 최소를 구해보자
+--JOB이 NULL인 데이터는 직무 미배정
+SELECT nvl(e.JOB, '직무 미배정')         "직무"
+      ,TO_CHAR(SUM(e.SAL), '$9,999')   "급여 총합"
+      ,TO_CHAR(AVG(e.SAL), '$9,999.99')"평균 급여"
+      ,TO_CHAR(MAX(e.SAL), '$9,999')   "최대 급여"
+      ,TO_CHAR(MIN(e.SAL), '$9,999')   "최소 급여"
+  FROM emp e
+  GROUP BY e.JOB
+  ORDER BY e.JOB 
+;
+
+----------------부서가 미배정이여서 NULL인 데이터는 '미배정'이라고 출력하기--------------------
+--방법1.
+SELECT nvl(TO_CHAR(e.DEPTNO, '99'), '미배정')   "부서 번호"
+      ,SUM(e.SAL)                              "급여 총합"
+      ,TO_CHAR(AVG(e.SAL),'$9999.99')          "급여 평균"
+      ,MAX(e.SAL)                              "최대 급여"
+      ,MIN(e.SAL)                              "최소 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO
+  ORDER BY e.DEPTNO 
+;
+--방법2.
+SELECT nvl(e.DEPTNO||'', '미배정')              "부서 번호"
+      ,SUM(e.SAL)                              "급여 총합"
+      ,TO_CHAR(AVG(e.SAL),'$9999.99')          "급여 평균"
+      ,MAX(e.SAL)                              "최대 급여"
+      ,MIN(e.SAL)                              "최소 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO
+  ORDER BY e.DEPTNO 
+;
+
+--방법3.
+SELECT DECODE(nvl(e.DEPTNO, 0)
+            ,e.DEPTNO, e.DEPTNO||''
+            ,'미배정')                              "부서 번호"
+            ,TO_CHAR(SUM(e.SAL), '$9,999')         "급여 총합"
+            ,TO_CHAR(AVG(e.SAL), '$9,999.99')      "평균 급여"
+             ,TO_CHAR(MAX(e.SAL), '$9,999')        "최대 급여"
+            ,TO_CHAR(MIN(e.SAL), '$9,999')         "최소 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO
+  ORDER BY e.DEPTNO 
+;
+
+
+
+----4. HAVING 절의 사용
+--GROUP BY 결과에 조건을 걸어서
+--결과를 제한(필터링) 할 목적으로 사용되는 절
+
+--문제) 부서별 급여 평균이 2000이상인 부서
+--a) 우선 부서별 급여 평균을 구한다
+--b) a의 결과에서 2000이상인 부서만 남긴다
+SELECT e.DEPTNO        "부서번호"
+      ,AVG(e.SAL)      "평균 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO
+  HAVING AVG(e.SAL) >= 2000 -->GROUP BY절과 HAVING절에는 별칭을 사용 할 수 없다
+;
+
+----------------------------------수업 중 실습--------------------------------
+--1. 매니저별, 부하직원의 수를 구하고, 많은 순으로 정렬
+ SELECT e.MGR            "매니저"
+       ,COUNT(e.MGR)     "부하직원 수"
+   FROM emp e
+  WHERE e.MGR IS NOT NULL
+GROUP BY e.MGR
+ORDER BY COUNT(e.MGR) desc
+;
+--2.부서별 인원을 구하고, 인원 수 많은 순으로 정렬
+  SELECT e.DEPTNO as     "부서번호"
+        ,COUNT(e.DEPTNO) "부서인원"
+    FROM emp e
+   WHERE e.DEPTNO IS NOT NULL
+GROUP BY e.DEPTNO
+ORDER BY COUNT(e.DEPTNO) desc
+;
+--3.직무별 급여 평균 구하고, 급여 평균 높은 순으로 정렬
+  SELECT     nvl(e.JOB||'', '직무 미지정')          "직무"
+            ,TO_CHAR(AVG(e.SAL), '$9,999.99')     "급여 평균"
+    FROM     emp e
+GROUP BY     e.JOB
+ORDER BY     AVG(e.SAL) desc
+;
+--4.직무별 급여 총합 구하고, 총합 높은 순으로 정렬
+  SELECT  nvl(e.JOB||'', '직무 미지정')        "직무"
+         ,SUM(e.SAL)                         "급여 총합"
+    FROM  emp e
+GROUP BY  e.JOB
+ORDER BY  SUM(e.SAL) desc
+;
+--5.급여의 앞 단위가 1000이하, 1000, 2000, 3000, 5000 별로 인원 수를 구하시요 // 급여단위 오름차순으로 정렬
+--a) 급여 단위를 어떻게 구할 것인가? TRUNC()활용
+SELECT e.EMPNO
+      ,e.ENAME
+      ,TRUNC(e.SAL, -3) as "급여단위"
+  FROM emp e
+;  
+--b)TRUNC 로 얻어낸 급여단위를 COUNT 하면 인원 수를 구할 수 있다
+--TRUNC(e.SAL, -3)로 잘라낸 값이 그룹화 기준값으로 사용됨
+SELECT TRUNC(e.SAL, -3)          as "급여단위"
+      ,COUNT(TRUNC(e.SAL, -3))    as "인원 수"
+  FROM emp e
+GROUP BY TRUNC(e.SAL, -3)   
+ORDER BY "급여단위"
+;
+--c)급여단위가 1000미만인 경우 0으로 출력되는 것을 변경
+--  :범위 연산이 필요해 보임 ==>CASE구문 선택
+SELECT CASE WHEN TRUNC(e.SAL, -3)  < 1000 THEN '1000미만'
+            ELSE TRUNC(e.SAL, -3)||''
+        END as "급여단위"
+      ,COUNT(TRUNC(e.SAL, -3)) "인원(명)"
+FROM emp e
+GROUP BY TRUNC(e.SAL, -3)   
+ORDER BY TRUNC(e.SAL, -3)
+;    
+--6.직무별 '급여 합'의 단위를 구하고, 급여 합의 단위가 큰 순으로 정렬
+--a)job별로 급여의 합을 구함
+SELECT e.JOB
+      ,SUM(e.SAL)
+  FROM emp e
+GROUP BY e.JOB
+;
+--b)job별 급여의 합에서 단위를 구함
+SELECT e.JOB
+      ,TRUNC(SUM(e.SAL), 3) "급여단위"
+  FROM emp e
+GROUP BY e.JOB
+;
+--c)정렬
+SELECT NVL(e.JOB, '미배정') "직무"
+      ,TRUNC(SUM(e.SAL), -3) "급여단위"
+  FROM emp e
+GROUP BY e.JOB
+ORDER BY "급여단위" DESC
+;
+--7.직무별 급여 평균이 2000이하인 경우를 구하고 평균이 높은 순으로 정렬
+  SELECT   e.JOB                             "직무"                
+          ,TO_CHAR(AVG(e.SAL), '$9999.99')   "급여 평균"
+    FROM   emp e
+GROUP BY   e.JOB
+  HAVING   AVG(e.SAL) <= 2000
+ORDER BY   AVG(e.SAL) desc
+;
+
+--8.년도 별 입사 인원을 구하시오
+  SELECT TO_CHAR(e.HIREDATE, 'YYYY')        "입사 년도"
+        ,COUNT(TO_CHAR(e.HIREDATE, 'YYYY')) "인원"
+    FROM emp e
+GROUP BY TO_CHAR(e.HIREDATE, 'YYYY')
+;
+
+--9.년도별 월별 입사 인원을 구하시오
