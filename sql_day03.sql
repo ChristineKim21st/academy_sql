@@ -260,3 +260,49 @@ SELECT SUM(e.SAL) "급여 총합"
   FROM emp e
   GROUP BY e.DEPTNO
 ;
+
+--부서별 직무별 급여의 총합, 평균, 최대 최소를 구해보자 
+SELECT e.DEPTNO   "부서 번호"
+      ,e.JOB      "직무"
+      ,SUM(e.SAL) "급여 총합"
+      ,AVG(e.SAL) "급여 평균"
+      ,MAX(e.SAL) "최대 급여"
+      ,MIN(e.SAL) "최소 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO, e.JOB
+  ORDER BY e.DEPTNO, e.JOB 
+;
+
+--오류코드: ORA-00979: not a GROUP BY expression
+SELECT e.DEPTNO   "부서 번호"
+      ,e.JOB      "직무"
+      ,SUM(e.SAL) "급여 총합"
+      ,AVG(e.SAL) "급여 평균"
+      ,MAX(e.SAL) "최대 급여"
+      ,MIN(e.SAL) "최소 급여"
+  FROM emp e
+  GROUP BY e.DEPTNO -->그룹함수가 적용되지 않았고, GROUP BY절에도 등장하지 않은 JOB 컬림이 SELECT 절에 있기 때문 
+  ORDER BY e.DEPTNO, e.JOB 
+;
+
+
+--오류코드: ORA-00937: not a single-group group function
+SELECT e.DEPTNO   "부서 번호"
+      ,e.JOB      "직무"
+      ,SUM(e.SAL) "급여 총합"
+      ,AVG(e.SAL) "급여 평균"
+      ,MAX(e.SAL) "최대 급여"
+      ,MIN(e.SAL) "최소 급여"
+  FROM emp e
+--GROUP BY e.DEPTNO ==>>그룹함수가 적용되지 않은 컬럼들이 SELECT에 등장하면 그룹화 기준으로 가정되어야 함
+;
+--Job별 급여의 총합, 평균, 최대, 최소를 구해보자
+SELECT e.JOB        "직무"
+      ,TO_CHAR(SUM(e.SAL), '$9,999')   "급여 총합"
+      ,TO_CHAR(AVG(e.SAL), '$9,999.99')   "평균 급여"
+      ,TO_CHAR(MAX(e.SAL), '$9,999')   "최대 급여"
+      ,TO_CHAR(MIN(e.SAL), '$9,999')  "최소 급여 "
+  FROM emp e
+  GROUP BY e.JOB
+  ORDER BY e.JOB 
+;
