@@ -318,6 +318,7 @@ SELECT ROUND(1234.46, 0) FROM dual;
 
 ----3.TRUNC(m, n) : 실수 m을 n에서 지정한 자리 이하 소수점 버림
 SELECT TRUNC(1234.56, 1) FROM dual;
+SELECT TRUNC(1234.56, -1) FROM dual;
 --n을 생략하면 0으로 수행한다.
 
 ----4.CEIL(n) : 입력된 실수 n에서 같거나 가장 큰 가까운 정수
