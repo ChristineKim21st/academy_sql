@@ -377,6 +377,22 @@ SELECT e.DEPTNO        "부서번호"
   GROUP BY e.DEPTNO
   HAVING AVG(e.SAL) >= 2000 -->GROUP BY절과 HAVING절에는 별칭을 사용 할 수 없다
 ;
+--HAVING 절이 존재하는 경우 SELECT 구문의 실행 순서 정리
+/*
+1.FROM 절의 테이블 각 행을 대상으로
+2.WHERE 절의 조건에 맞는 행만 선택하고
+3.GROUP BY 절에 나온 컬럼, 식(함수 식 등)으로 그룹화를 진행
+4.HAVING 절의 조건을 만족시키는 그룹행만 선택
+5.4까지 선택된 그룹 정보를 가진 행에 대해서 SELECT 절에 명시된 컬럼, 식(함수 식)만 출력
+6. ORDER BY 가 있다면 정렬 조건에 맞추어 최종 정렬하여 보여 준다.
+*/
+
+----3)EQUI JOIN: 조인의 가장 기본 형태
+--               서로 다른 테이블의 공통 컬럼을 '='로 연결
+--               공통 컬럼을 join attribute라고 부름
+
+
+
 
 ----------------------------------수업 중 실습--------------------------------
 --1. 매니저별, 부하직원의 수를 구하고, 많은 순으로 정렬
@@ -434,6 +450,15 @@ FROM emp e
 GROUP BY TRUNC(e.SAL, -3)   
 ORDER BY TRUNC(e.SAL, -3)
 ;    
+--5번을 다른 함수로 풀이
+SELECT CASE WHEN SUBSTR(LPAD(e.SAL, 4, '0'), 1, 1) = 0 THEN '1000미만'
+            ELSE TO_CHAR(SUBSTR(LPAD(e.SAL, 4, '0'), 1, 1)*1000)
+        END as "급여단위"
+      ,COUNT(*) "인원(명)"
+  FROM emp e
+GROUP BY SUBSTR(LPAD(e.SAL, 4, '0'), 1, 1)
+ORDER BY SUBSTR(LPAD(e.SAL, 4, '0'), 1, 1)
+;
 --6.직무별 '급여 합'의 단위를 구하고, 급여 합의 단위가 큰 순으로 정렬
 --a)job별로 급여의 합을 구함
 SELECT e.JOB
@@ -468,6 +493,152 @@ ORDER BY   AVG(e.SAL) desc
         ,COUNT(TO_CHAR(e.HIREDATE, 'YYYY')) "인원"
     FROM emp e
 GROUP BY TO_CHAR(e.HIREDATE, 'YYYY')
+ORDER BY "입사 년도"
 ;
 
 --9.년도별 월별 입사 인원을 구하시오
+--: hiredate 활용 => 년도추출, 월 추출  두가지를 그룹화 기준으로 사용
+--a) hiredate에서 년도 추출 : TO_CHAR(e.HIREDATE, 'YYYY')
+--               월 추출   : TO_CHAR(e.HIREDATE, 'MM')
+--b)두가지 그룹화 기준 적용된 구문 완성
+SELECT TO_CHAR(e.HIREDATE, 'YYYY') "입사년도"
+      ,TO_CHAR(e.HIREDATE, 'MM')   "입사 월"
+      ,COUNT(*)                    "인원(명)"
+  FROM emp e
+GROUP BY TO_CHAR(e.HIREDATE, 'YYYY'), TO_CHAR(e.HIREDATE, 'MM')
+ORDER BY "입사년도", "입사 월"
+;
+
+
+------------------------------------------------------------
+--년도별, 월별 입사 인원을 가로 표 형태로 출력
+--a)년도 추출, 월 추출
+TO_CHAR(e.HIREDATE, 'YYYY'), TO_CHAR(e.HIREDATE, 'MM')
+
+--b)hiredate에서 월을 추출한 값이 01이 나오면 그 때의 숫자만 1월에서 카운트
+--  이 과정을 12월 까지 반복
+SELECT TO_CHAR(e.HIREDATE, 'YYYY')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT  '인원(명)' as "입사 월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '01', 1)) "1월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '02', 1)) "2월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '03', 1)) "3월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '04', 1)) "4월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '05', 1)) "5월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '06', 1)) "6월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '07', 1)) "7월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '08', 1)) "8월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '09', 1)) "9월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '10', 1)) "10월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '11', 1)) "11월"
+        ,COUNT(DECODE(TO_CHAR(e.HIREDATE, 'MM'), '12', 1)) "12월"
+FROM emp e
+;
+
+---7.조인과 서브쿼리
+--(1)조인
+--하나 이상의 테이블을 논리적으로 묶어서 하나의 테이블 인 것처럼 다루는 기술
+--FROM 절에 조인에 사용할 테이블 이름을 나열
+
+--문제) 직원의 소속 부서 번호가 아닌 부서 명을 알고 싶다.
+--a)FROM절에 emp, dept 두 테이블을 나열 ==> 조인발생 ==>카티션 곱 ==>두 테이블의 모든 조합
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e
+      ,dept d
+;
+
+--b)조건이 추가 되어야 직원의 소속부서만 정확하게 연결 할 수 있음
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e
+      ,dept d
+ WHERE e.DEPTNO = d.DEPTNO
+ ORDER BY d.DEPTNO--오라클의 전통적인 조인 조건 작성 기법
+;
+
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e JOIN dept d ON(e.DEPTNO = d.DEPTNO)--최근 다른 DBMS들이 사용하고 있는 기법을 오라클에서 지원함
+ORDER BY d.DEPTNO
+;
+/*
+KING	ACCOUNTING
+CLARK	ACCOUNTING
+MILLER	ACCOUNTING
+FORD	RESEARCH
+SMITH	RESEARCH
+JONES	RESEARCH
+JAMES	SALES
+TURNER	SALES
+MARTIN	SALES
+WARD	SALES
+ALLEN	SALES
+BLAKE	SALES
+*/
+
+--문제) 위의 결과에서 ACCOUNTING부서의 직원만 알고 싶다.
+--조인 조건과 일반 조건이 같이 사용 될 수 있다.
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e
+      ,dept d
+ WHERE e.DEPTNO = d.DEPTNO
+   AND d.DNAME = 'ACCOUNTING'
+;
+----2)조인 : 카티션 곱
+--          조인 대상 테이블의 데이터를 가능한 모든 조합으로 엮는 것
+--          조인 조건 누락시 발생
+--          오라클 9i버전 이후 CROSS JOIN 키워드 지원
+SELECT e.ENAME
+      ,d.DNAME
+      ,s.GRADE
+  FROM emp e CROSS JOIN dept d
+             CROSS JOIN Salgrade s
+;
+
+SELECT e.ENAME
+      ,d.DNAME
+      ,s.GRADE
+  FROM emp e
+      ,dept d
+      ,SAL
+
+-----1.오라클 전통적인 WHERE에 조인 조건을 걸어주는 바업
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e
+      ,dept d
+ WHERE e.DEPTNO = d.DEPTNO
+ ORDER BY d.DEPTNO
+;
+----2.NATUAL JOIN,키워드로 자동 조인
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e NATURAL JOIN dept d
+;
+-----3. JOIN ~USING 키워드로 조인
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e JOIN dept d USING(deptno) --USING뒤에 공통 컬럼을 별칭 없이 표시
+;  
+-----4.JOIN에 키워드로 조인
+SELECT e.ENAME
+      ,d.DNAME
+  FROM emp e JOIN dept d ON(e.deptno = d.deptno)
+;
+
+--(2)서브쿼리
