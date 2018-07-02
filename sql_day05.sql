@@ -341,3 +341,30 @@ UPDATE, DELETE는 구문에 물리적인 오류가 없으면
 WHERE조건에 맞는 전체 행 대상으로 작업하는 것이
 기본이므로 ***항상 주의해야함.***
 */
+
+--UPDATE 구문에 SELECT 서브쿼리 사용
+--'M08' 아이디의 PHONE과 GENDER를 업데이트
+
+--권장되는 pk로 걸어서 수정하는 구문
+UPDATE member m
+   SET m.PHONE  = '3318'
+      ,m.GENDER = 'M'
+ WHERE m.MEMBER_ID = 'M08'
+;
+
+--UPDATE member m
+UPDATE member m
+   SET m.PHONE  = '3318'
+      ,m.GENDER = 'M'
+ WHERE m.ADDRESS = (SELECT m.ADDRESS
+                      FROM member m
+                     WHERE m.MEMBER_ID='M08')
+;-->1 행 이(가) 업데이트되었습니다.
+
+--'M13' 유재성 멤버의 성별 업데이트
+UPDATE member m
+   SET m.GENDER = (SELECT substr('MATH', 1, 1)
+                     FROM dual)
+ WHERE m.MEMBER_ID  = 'M13'
+;
+
