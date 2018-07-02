@@ -570,3 +570,129 @@ SELECT o.OBJECT_NAME
       ,o.OBJECT_ID
   FROM user_objects o
 ;
+
+/*------------------------------------
+    메타데이터를 저장하는 유저 딕셔너리
+  ------------------------------------
+    무결성 제약조건: user_constraints
+    시퀀스 생성정보: user_sequences
+    테이블 생성정보: user_tables
+    인덱스 생성정보: user_indexes
+    객체들 생성정보: user_objects
+  ------------------------------------  
+*/
+
+--2.생성된 시퀀스를 사용
+--(1)NEXTVAL: 시퀀스의 다음 번호를 생성
+--            CREATE되고 나서 반드시 최초에 한번은 NXTVAL이 호출되어야 생성이 시작됨
+--   사용법: 시퀀스이름.NEXTVAL
+SELECT SEQ_MEMBER_ID.NEXTVAL
+  FROM dual;
+-->maxvalue 이상 생성하면
+--ORA-08004: sequence SEQ_MEMBER_ID.NEXTVAL exceeds MAXVALUE and cannot be instantiated
+
+--(2)CURRVAL: 시퀀스에서 현재 생성된 번호를 확인
+--            시퀀스 생성 후 NEXTVAL이 한번도 호출된 적이 없으면 비활성화 상태     
+--     사용법: 시퀀스이름.CURRVAL
+SELECT SEQ_MEMBER_ID.CURRVAL
+  FROM dual
+;
+
+CREATE SEQUENCE seq_test
+;
+SELECT seq_test.CURRVAL
+  FROM dual
+;-->ORA-08002: sequence SEQ_TEST.CURRVAL is not yet defined in this session
+-->NEXTVAL 최초 한번 실행 전 CURRVAL을 실행하고자 할 때 오류
+DROP SEQUENCE seq_test;
+
+--3.시퀀스 수정: ALTER SEQUENCE
+--             생성한 seq_member_id의 maxvalue 옵션을 nomaxvalue로
+ALTER SEQUENCE seq_member_id
+NOMAXVALUE
+;-->Sequence SEQ_MEMBER_ID이(가) 변경되었습니다.
+
+--4. 시퀀스 삭제: DROP SEQUENCE
+--              생성한 시퀀스 seq_member_id 삭제
+DROP SEQUENCE seq_member_id
+;--Sequence SEQ_MEMBER_ID이(가) 삭제되었습니다.
+
+--존재하지 않는 시퀀스에서 CURRVAL을 시도
+SELECT SEQ_MEMBER_ID.CURRVAL
+  FROM dual
+;--ORA-02289: sequence does not exist
+
+--멤버 아이디에 조합할 시퀀스 신규 생성
+CREATE SEQUENCE seq_member_id
+START WITH 1
+NOMAXVALUE 
+NOCYCLE
+;
+
+--일괄적으로 증가하는 값을 멤버아이디로 자동생성
+--'M01', 'M02', ...'M0x'이런 형태의 값을 조합
+SELECT 'M' || LPAD(seq_member_id.NEXTVAL, 2, '0')
+  FROM dual
+;
+/*
+-- a) sal 컬럼에 왼쪽으로 패딩을 붙여서 0을 채움
+SELECT e.EMPNO
+     , e.ENAME
+     , LPAD(e.SAL, 4, '0')
+  FROM emp e
+;
+*/
+
+
+----------------------------------------------------------
+--INDEX : 데이터의 검색(조회)시 일정한 검색 속도를 보장하기 위하여
+--        DBMS가 관리하는 객체
+
+---1. user_indexes 딕셔너리에서 검색
+SELECT i.INDEX_NAME
+      ,i.INDEX_TYPE
+      ,i.TABLE_NAME
+      ,i.TABLE_OWNER
+      ,i.INCLUDE_COLUMN
+  FROM user_indexes i
+;
+
+--2. 테이블의 주키(PK)컬럼에 대해서는 이미 DBMS가 자동으로
+--   인덱스 생성함
+--   따라서 또 생성 시도시 생성 불가능
+--   예)member테이블의 member_id컬럼에 인덱스 생성 시도
+CREATE InDEX idx_member_id
+ON member (member_id)
+;-->ORA-01408: such column list already indexed
+--테이블의 주키 컬럼에는 이미 있으므로 오류 발생
+--생성하는 인덱스 이름이 달라도 생성할 수 없음
+
+--3. 복사한 테이블인 new_member 에는 PK가 없으므로 인덱스도 없는 상태
+--   new_member테이블에 index 생성시도
+CREATE INDEX idx_new_member_id
+ON new_member(member_id)
+;-->Index IDX_NEW_MEMBER_ID이(가) 생성되었습니다.
+
+--user_indexes  딕셔너리에서 검색
+SELECT i.INDEX_NAME
+      ,i.INDEX_TYPE
+      ,i.TABLE_NAME
+      ,i.TABLE_OWNER
+      ,i.INCLUDE_COLUMN
+  FROM user_indexes i
+;
+-->IDX_NEW_MEMBER_ID	NORMAL	NEW_MEMBER	SCOTT	
+
+---(2) 대상 컬럼이 중복 값이 없는 컬럼임이 확실하다면
+---    UNIQUE 인덱스 생성이 가능
+
+DROP INDEX IDX_NEW_MEMBER_ID;
+
+CREATE UNIQUE INDEX INX_NEW_MEMBER_ID
+ON new_member(member_id)
+;
+
+--INDEX가 명시적으로 사용되는 경우
+
+--오라클에 빠른 검색을 위해 HINT 절을 SELECT에 사용하는
+--경우가 존재
