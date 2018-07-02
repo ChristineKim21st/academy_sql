@@ -49,3 +49,123 @@ BEGIN
     DBMS_OUTPUT.PUT_line(name||' since '||year);--화면 출력
 END;
 /
+
+
+--2) 변수 선언이 없는 1회용 프로시저는 DELCARE 브록 생략 가능
+BEGIN
+        DBMS_OUTPUT.PUT_LINE('한남대학교 개교 1965년');
+END;
+/
+
+-------------------------------------------------------
+--2.STORED PROCEDURE: (SP) 저장 프로시저
+-------------------------------------------------------
+--반복적으로 호출하여 사용하기 위한 목적으로
+--PROCEDURE을 DBMS에 선 컴파일 하여 저장하고
+--사용하는 객체
+
+--TABLE, SEQUENCE, INDEX, VIEW등과 같은 객체이므로
+--동일한 이름의 다른 테이블명 등으로 생성 불가능
+
+---1) 저장 프로시저(SP)의 생성
+CREATE OR REPLACE PROCEDURE sp_maxim
+( name      IN  VARCHAR2
+ ,message   IN  VARCHAR2)
+IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(name || ':' || message);
+END sp_maxim;
+/
+--저장 프로시저는 컴파일과 동시 실행이 아님 컴파일만 실행
+--실행은 따로 해야함
+--구문에 오류가 있으면 오류와 함께 컴파일이 진행
+
+--2) Oracle SQL DEVELOPER ==> cntrl+enter key입력으로 컴파일 진행
+--   SQL*PLUS 명령창 코드 붙여넣기로 실행
+--구문에 오류가 있으면 오류와 함께 컴파일이 진행
+--오류 상태로 컴파일된 프로시저는 실행이 안됨
+
+---3)오류 상태로 컴파일되면 오류 수정 후 재컴파일 진행
+--   재 컴파일 진행을 쉽게 하기 위해서 
+--   OR REPLACE 옵션 사용을 권장
+--   오류가 있는 경우 SHOW ERRORS명령으로 오류 확인 가능
+show errors;
+/*
+PROCEDURE SCOTT.SP_MAXIM에 대한 오류:
+
+LINE/COL ERROR
+-------- -----------------------------------------------------------------
+7/1      PLS-00103: Encountered the symbol "END" when expecting one of the following:
+         := . ( % ;
+         The symbol ";" was substituted for "END" to continue.
+*/
+
+---4) 실행
+----a.  BIND 변수 선언 (OUT변수가 선언된 경우에만)
+----b.  EXECUTE 명령을 실행
+----c.  PRINT 명령으로 BIND변수 값 출력(OUT변수가 선언된 경우에만)
+
+--EXECUTE 프로시저이름(전달할 값1, 전달할 값2): SQL*PLUS 명령
+EXECUTE SP_MAXIM('소크라테스', '너 자신을 알라')
+EXECUTE SP_MAXIM('홍길동', '호부호형을 못하니...')
+EXECUTE SP_MAXIM('장 폴 사르트르', '인생은 B와 D사이의 c이다.')
+EXECUTE SP_MAXIM('데카르트', 'I think therfore I am')
+
+--입력 아규먼트가 없는 sp작성
+CREATE OR REPLACE PROCEDURE sp_maxim
+IS  --지역 변수 선언 블록, BEGIN~End 사이에서 사용되는 변수 선언부
+    --변수타입 선언시 크기까지 지정 할 수 있다.
+    name        VARCHAR2(30) := '소크라테스';
+    message     VARCHAR2(100):= '너 자신을 알라';   
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(name || ':' || message);
+END sp_maxim;
+/
+-->Procedure SP_MAXIM이(가) 컴파일되었습니다.
+
+EXECUTE sp_maxim;
+
+
+
+--------------------------------------------------------
+--OUT 모드 변수가 있는 SP
+--1)sp_maxim을 out 변수가 있는 sp로 수정
+CREATE OR REPLACE PROCEDURE sp_maxim
+( name      IN  VARCHAR2
+ ,message   IN  VARCHAR2
+ ,result    OUT VARCHAR2)
+IS
+BEGIN
+    --블록 안에서 바로 출력
+    DBMS_OUTPUT.PUT_LINE(name || ':' || message);
+    --result OUT 변수에 저장
+    result :=name||':'||message;
+END sp_maxim;
+/
+
+--2) 실행을 위해
+--a.BIND변수를 선언 : SQL*PLUS의 변수
+--  VAR[IABLE] 바인드변수이름 타입
+VAR v_maxim_result VARCHAR2(200)
+
+PRINT v_maxim_result
+
+---
+EXECUTE sp_maxim('소크라테스', '너 자신을 알라', :v_maxim_result)
+/*
+CREATE OR REPLACE PROCEDURE sp_maxim
+( name      IN  VARCHAR2
+ ,message   IN  VARCHAR2
+ ,result    OUT VARCHAR2)
+IS
+BEGIN
+    --블록 안에서 바로 출력
+    DBMS_OUTPUT.PUT_LINE(name || ':' || message);
+    --result OUT 변수에 저장
+    result :=name||':'||message;
+END sp_maxim;
+/
+*/
+
+-------c. print로 bind변수를 출력
+PRINT v_maxim_result
