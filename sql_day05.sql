@@ -215,4 +215,129 @@ VALUES('남정규', 'M10');
 --       이름과 주소 모두 문자 데이터이기 때문에 형이 맞아서
 INSERT INTO member(MEMBER_NAME, MEMBER_ID)
 VALUES('목동', 'M11');
-042 719 9101
+
+INSERT INTO member(MEMBER_ID, MEMBER_NAME)
+VALUES('M12', '이동희');
+
+--INTO절에 나열된 컬럼과 VALUES절의 값의 개수 불일치
+INSERT INTO member(member_id, member_name, gender)
+VALUES ('M13', '유재성');
+--SQL 오류: ORA-00947: not enough values
+
+--INTO절에 나열된 컬럼과 VALUES절의 값의 데이터 타입 불일치
+INSERT INTO member(member_id, member_name, birth_month)
+VALUES('M13', '유재성', 'M');
+--SQL 오류: ORA-00904: "MEMBER_NAMEM": invalid identifier
+
+--->>수정
+INSERT INTO member(member_id, member_name, birth_month)
+VALUES('M13', '유재성', 3);
+
+------------------------------------------------------
+--다중행 입력:SUB-QUERY 를 사용하여 가능
+--구문 구조
+
+INSERT INTO 테이블 이름
+SELECT 문장; --서브쿼리
+
+--CREATE AS SELECT는 데이터를 복사하여 테이블을 생성
+--VS
+--INSERT INTO ~SELECT 는 이미 만들어진 테이블에 데이터만 복사
+
+--휴대폰 번호가 있는 사람만 데이터 삽입
+INSERT INTO new_member
+SELECT m.*
+  FROM member m
+ WHERE m.PHONE IS NOT NULL
+;-->5개 행 이(가) 삽입되었습니다.
+ 
+INSERT INTO new_member
+SELECT m.*
+  FROM member m
+ WHERE m.MEMBER_ID > 'M09'
+;-->4개 행 이(가) 삽입되었습니다.
+
+--NEW_MEMBER 테이블 삭제 X 버튼 클릭 후 -->데이터반영
+
+--성이 '김'인 멤버데이터를 복사 입력
+INSERT INTO new_member
+SELECT m.*
+  FROM member m
+ WHERE m.MEMBER_NAME LIKE '김%'
+;
+
+--짝수달에 태어난 멤머데이터를 복사
+INSERT INTO new_member
+SELECT m.*
+  FROM member m
+ WHERE MOD(m.BIRTH_MONTH,2)=0
+;
+
+---------------------------------------------------
+--1) UPDATE : 테이블의 행을 수정
+--            WHERE조건절의 조합에 따라 1행 또는 다행 수정이 가능
+
+--member테이블에서 이름이 잘못들어간 'M11'멤버 정보를 수정
+--데이터 수정 전에 영구반영을 실행
+commit;
+
+UPDATE member m
+   SET m.MEMBER_NAME = '남정규'
+WHERE  m.MEMBER_ID = 'M11'
+;-->1 행 이(가) 업데이트되었습니다.
+commit;
+--'M05' 회원의 전화번호 필드를 업데이트(실수로 WHERE조건절을 입력하지 않음)
+UPDATE member m
+   SET m.PHONE = '1743'
+--WHERE m.MEMBER_ID = 'M05'
+;
+-->13개 행 이(가) 업데이트되었습니다.
+
+--데이터상태 되돌리기
+ROLLBACK;
+-->롤백 완료. //마지막 commit;전상태로 돌아간다.
+
+
+--'M05' 회원의 전화번호 필드를 업데이트(정상쿼리)
+UPDATE member m
+   SET m.PHONE = '1743'
+WHERE m.MEMBER_ID = 'M05'
+;-->1 행 이(가) 업데이트되었습니다.
+
+--2개 이상의 컬럼을 한번에 업데이트 SET 절에 나열
+UPDATE member m
+   SET m.PHONE = '1743'
+      ,m.REG_DATE = sysdate
+WHERE m.MEMBER_ID = 'M05'
+;-->1 행 이(가) 업데이트되었습니다.
+
+commit;
+
+
+--'월평동'에 사는 '김소민' 멤버의 NULL데이터 업데이트
+UPDATE member m
+   SET m.PHONE = '4724'
+      ,m.BIRTH_MONTH = 1
+      ,m.GENDER = 'F'
+WHERE m.ADDRESS = '월평동'
+;
+--위의 실행 결과는 의도대로 반영되는 것 처럼
+--월평동에 사는 사람이 많다면
+--월평동의 모든 사람 정보가 수정될 것.
+--따라서 UPDATE 구문작성시 WHERE 조건은
+--주의를 기울여서 작성해야 함.
+
+
+/*
+DML : UPDATE, DELECT작업시 주의점
+
+딱 하나의 데이터를 수정 및 삭제 하려면
+WHERE절의 비교조건에 반드시 PK로 설정한
+컬럼의 값을 비교하는 것을 권장한다.
+
+PK행은 전체 행에서 유일하고, NOT NULL임이 보장되기 때문이다.
+
+UPDATE, DELETE는 구문에 물리적인 오류가 없으면
+WHERE조건에 맞는 전체 행 대상으로 작업하는 것이
+기본이므로 ***항상 주의해야함.***
+*/
