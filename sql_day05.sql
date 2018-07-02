@@ -368,3 +368,205 @@ UPDATE member m
  WHERE m.MEMBER_ID  = 'M13'
 ;
 
+--'M12' 데이터 gender 컬럼 수정시 제약 조건 위반
+UPDATE  member m
+   SET ,m.GENDER = 'N'
+ WHERE  m.MEMBER_ID = 'M12'
+;
+
+--address 가 null인 사람들의 주소를 일괄 '대전'으로 수정
+ UPDATE member m
+    SET m.ADDRESS = '대전'
+  WHERE m.ADDRESS IS NULL
+;-->5개 행 이(가) 업데이트되었습니다.
+
+commit;
+
+
+-----------------------------------------------------
+---3)DELETE: 테이블에서 행단위로 데이터 삭제
+
+---1. WHERE 조건이 있는 DELETE구문
+
+--삭제전 커밋
+commit;
+
+--gender 가 'F'인 데이터를 삭제
+DELETE member m
+ WHERE m.GENDER = 'R'
+;-->0개 행 이(가) 삭제되었습니다.
+-->gender에 R값이 없기 때문에 삭제된 행이 없는 결과를 얻었을 뿐
+--구문의 오류는 아님. 논리적으로 잘못된 결과인 것.
+
+DELETE member m
+ WHERE m.GENDER = 'F'
+;-->2개 행 이(가) 삭제되었습니다.
+--where조건절을 만족하는 모든 행에 대해 삭제 작업을 진행한다.
+
+--데이터 복원
+ROLLBACK;
+
+--M99를 지우고 싶다면 pk로 삭제하자
+DELETE member m
+ WHERE m.MEMBER_ID = 'M99'
+;--1 행 이(가) 삭제되었습니다.
+commit;
+
+--2.WHERE 조건절이 없는 DELETE 구문
+--WHERE 조건을 아예 누락(생략)한 경우 전체행이 삭제돰
+DELETE member;
+
+---3. DELETE의 WHERE에 서브쿼리 조합
+--주소가 대전인 사람을 모두 삭제
+--(1)대전인 사람으 조회
+SELECT m.MEMBER_ID
+  FROM member m
+ WHERE m.ADDRESS = '대전'
+;
+
+--(2)삭제하는 매인 쿼리
+DELETE member m
+ WHERE m.MEMBER_ID IN (SELECT m.MEMBER_ID
+                         FROM member m
+                        WHERE m.ADDRESS = '대전')
+;
+rollback;
+
+--일반 WHERE로 삭제
+DELETE member m
+ WHERE m.ADDRESS = '대전'
+;
+
+--------------------------------------------------
+--DELETE vs. TRUNCATE
+/*
+1.TRUCATE 는 DDL에 속하는 명령어
+  ROLLBACK 지점을 생성하지 않음
+  따라서 한 번 실행된 DDL을 되돌릴 수 없음
+
+2.TRUCATE는 WHERE 절 조합이 안되므로
+  특정 데이터 선별하여 삭제하는 것은 불가능
+  
+  **사용시 주의
+*/
+
+
+--new_member테이블을 TRUCATE으로 날려보자
+--실행 전 되돌아갈 커밋 지점 생성
+commit;
+
+--new_member 내용 확인
+SELECT *
+  FROM new_member m
+;
+
+--TRUCATE로 new_member테이블 잘라내기
+TRUNCATE TABLE new_member;
+-->Table NEW_MEMBER이(가) 잘렸습니다.
+
+ROLLBACK;--롤백 완료.
+--BUT 내용은 돌아오지 않는다.
+--DDL 종류의 구문은 생성즉시 바로 자동으로 커밋이 이루어진다.
+--롤백의 시점이 이미 DDL실행 다음 시점으로 잡힘
+
+------------------------------------------------------------
+--TCL : Transaction Control Language
+--1)ROLLBACK
+--2)COMMIT
+DELETE FROM new_member
+where MEMBER_ID='M01';
+--3)SAVEMENT
+---1. new_member 테이블에 1행 추가
+commit;
+
+INSERT INTO new_member(MEMBER_ID, MEMBER_NAME)
+VALUES ('M01', '홍길동')
+;
+--1행 추가 상태까지 중간 저장
+SAVEPOINT do_insert; --Savepoint이(가) 생성되었습니다.
+
+---2.'홍길동'데이터의 주소를 수정
+UPDATE new_member m
+   SET m.ADDRESS = '율도국'
+ WHERE m.MEMBER_ID = 'M01'
+;
+
+--주소까지 SAVEPOINT저장
+SAVEPOINT do_UPDATE_addr; 
+
+---3.'홍길동'데이터의 전화번호를 수정
+UPDATE new_member m
+   SET m.PHONE = '0001'
+ WHERE m.MEMBER_ID = 'M01'
+;
+
+--주소까지 SAVEPOINT저장
+SAVEPOINT do_UPDATE_phone; 
+
+---3.'홍길동'데이터의 gender를 수정
+UPDATE new_member m
+   SET m.GENDER = 'M'
+ WHERE m.MEMBER_ID = 'M01'
+;
+--주소까지 SAVEPOINT저장
+SAVEPOINT do_UPDATE_gender; 
+
+---------------------------------------------
+--홍길동 데이터의 ROLLBACK 시나리오
+--1.주소 수정까지는 맞는데, 전화번호, 성별 수정은 잘못됨
+--  :되돌아가야 할 SAVEPOINT = do_update_addr
+ROLLBACK TO do_UPDATE_addr;
+ROLLBACK TO do_UPDATE_phone;
+/*
+-->>>
+ORA-01086: savepoint 'DO_UPDATE_PHONE' never established in this session or is invalid
+SAVEPOINT 의 순서가 do_update_addr이 아서기 때문에 여기 까지 한번 rollback이 일어나면 그 후에 생성된
+SAVEPOINT는 삭제된다.
+*/
+
+--2.주소, 전화번호까지 수정이 맞고, 성별 수정이 잘못됨
+ROLLBACK TO do_UPDATE_phone;
+
+--3. 2번 수정후 어디까지 롤백이 가능한가
+ROLLBACK TO do_update_addr;
+ROLLBACK TO do_insert;
+ROLLBACK;
+---SAVEPOINT로 한번 되돌아 가면 되돌아간 그 포인트 뒤에 생성된 SAVEPOINT는 무효화된다.
+
+
+
+
+
+
+-------------------------------------------------------------------
+--SEQUENCE : 기본 키 등으로 사용되는 일련번호 생성 객체
+
+
+
+--1. 시작번호 : 1, 최대 : 30, 사이클이 없는 시퀀스 생성
+CREATE SEQUENCE seq_member_id
+START WITH 1
+MAXVALUE 30
+NOCYCLE
+;-->Sequence SEQ_MEMBER_ID이(가) 생성되었습니다.
+
+--시퀀스가 생성되면 유저 딕셔너리에 정보가 저장됨
+-- :user_sequences
+
+SELECT s.SEQUENCE_NAME
+      ,s.MIN_VALUE
+      ,s.MAX_VALUE
+      ,s.CYCLE_FLAG
+      ,s.INCREMENT_BY
+  FROM user_sequences s
+ WHERE s.SEQUENCE_NAME = 'SEQ_MEMBER_ID'
+;
+--SEQ_MEMBER_ID	1	30	N	1
+
+--사용자의 객체가 저장되는 딕셔너리 테이블
+--:user_objects
+SELECT o.OBJECT_NAME
+      ,o.OBJECT_TYPE
+      ,o.OBJECT_ID
+  FROM user_objects o
+;
